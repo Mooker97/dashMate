@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(npx playwright:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx next:*)",
+      "Bash(if exist \".next\" rmdir /s /q \".next\")",
+      "Bash(if exist \"node_modules\\.cache\" rmdir /s /q \"node_modules\\.cache\")",
+      "Bash(powershell:*)",
+      "Bash(npx tsc:*)",
+      "Bash(taskkill:*)",
+      "Read(C:\\c\\coding\\dashMate\\dashmate/**)",
+      "Read(C:\\c\\coding\\dashMate\\dashmate\\src\\components/**)",
+      "Read(C:\\c\\coding\\dashMate\\dashmate/**)",
+      "Bash(tasklist:*)",
+      "Bash(npm ls:*)",
+      "Bash(wmic:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

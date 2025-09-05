@@ -1,0 +1,876 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Settings from '@/components/Settings';
+import SettingsTestPanel from '@/components/SettingsTestPanel';
+import VoiceControls from '@/components/VoiceControls';
+import BreakNotification from '@/components/BreakNotification';
+import { useSettings } from '@/hooks/useSettings';
+import { useTheme } from '@/hooks/useTheme';
+import { useTasks, Task } from '@/hooks/useTasks';
+import { useAudio } from '@/hooks/useAudio';
+import { useBreakReminder } from '@/hooks/useBreakReminder';
+
+export default function Home() {
+  const [isListening, setIsListening] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { settings, updateSettings, getComputedStyles, isLoaded: settingsLoaded } = useSettings();
+  const { tasks, addTask, deleteTask, toggleTask: toggleTaskHook, loading: tasksLoading, error: tasksError } = useTasks();
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskPriority, setNewTaskPriority] = useState<Task['priority']>('medium');
+  
+  // Initialize audio system
+  const [audioState, audioControls] = useAudio();
+  
+  // Initialize break reminder system
+  const [breakReminderState, breakReminderControls] = useBreakReminder(settings);
+  
+  // Apply theme
+  useTheme(settings.theme);
+
+  useEffect(() => {
+    setMounted(true);
+    // Initialize audio system when component mounts
+    if (audioState.isSupported.audio || audioState.isSupported.speech) {
+      audioControls.initialize().catch(error => {
+        console.warn('Audio initialization failed:', error);
+      });
+    }
+  }, [audioState.isSupported, audioControls]);
+
+  const handleMicClick = async () => {
+    if (isListening) {
+      // Stop listening and resume break timer
+      audioControls.stopMicrophone();
+      setIsListening(false);
+      if (breakReminderState.isPaused && settings.breakReminders) {
+        breakReminderControls.startTimer();
+      }
+    } else {
+      // Start listening and pause break timer to avoid interruptions
+      if (breakReminderState.isActive && settings.breakReminders) {
+        breakReminderControls.pauseTimer();
+      }
+      
+      try {
+        // Request permissions if needed
+        if (!audioState.hasPermissions) {
+          const hasPermissions = await audioControls.requestMicrophonePermissions();
+          if (!hasPermissions) {
+            console.warn('Microphone permission denied');
+            return;
+          }
+        }
+        
+        // Start microphone with current sensitivity setting
+        await audioControls.startMicrophone(settings.microphoneSensitivity);
+        setIsListening(true);
+        
+        // Optional: Provide voice feedback
+        if (settings.voiceFeedback && audioState.isSupported.speech) {
+          audioControls.speak("I'm listening, how can I help you today?", settings.coachPersonality)
+            .catch(error => console.warn('Voice feedback failed:', error));
+        }
+      } catch (error) {
+        console.error('Failed to start microphone:', error);
+        setIsListening(false);
+        // Resume break timer if it was paused
+        if (breakReminderState.isPaused && settings.breakReminders) {
+          breakReminderControls.startTimer();
+        }
+      }
+    }
+    
+    // Add haptic feedback simulation
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
+  const toggleTask = async (taskId: string) => {
+    const taskBefore = tasks.find(task => task.id === taskId);
+    
+    // Toggle the task using the hook
+    toggleTaskHook(taskId);
+
+    // Play completion sound and provide voice feedback if task was just completed
+    if (taskBefore && !taskBefore.completed) {
+      // Play priority-based completion sound if enabled
+      if (settings.taskCompletionSound && audioState.isSupported.audio) {
+        try {
+          await audioControls.playTaskCompletionSound(taskBefore.priority);
+        } catch (error) {
+          console.warn('Task completion sound failed:', error);
+        }
+      }
+
+      // Provide voice feedback if enabled
+      if (settings.voiceFeedback && audioState.isSupported.speech) {
+        const encouragementMessages = {
+          supportive: [
+            "Great job! You're making excellent progress.",
+            "Well done! That's another task completed.",
+            "Fantastic work! Keep up the momentum.",
+            "You're doing amazing! One step closer to your goals."
+          ],
+          gentle: [
+            "Lovely work! Take a moment to appreciate what you've accomplished.",
+            "Wonderful! You should feel proud of that completion.",
+            "That's beautiful progress. You're doing so well.",
+            "Gentle congratulations on finishing that task."
+          ],
+          direct: [
+            "Task completed. Good work.",
+            "Done! Moving on to the next one.",
+            "Completed successfully. Keep going.",
+            "Task finished. What's next?"
+          ]
+        };
+
+        const messages = encouragementMessages[settings.coachPersonality];
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+        
+        try {
+          await audioControls.speak(randomMessage, settings.coachPersonality);
+        } catch (error) {
+          console.warn('Voice feedback failed:', error);
+        }
+      }
+    }
+  };
+
+  const getPriorityStyles = (priority: Task['priority'], completed: boolean) => {
+    const computedStyles = getComputedStyles();
+    
+    if (completed) {
+      return settings.gentleNotifications || settings.focusMode
+        ? 'bg-white/30 dark:bg-gray-800/30 border-gray-100/40 dark:border-gray-800/40'
+        : 'bg-white/40 dark:bg-gray-800/40 border-gray-200/50 dark:border-gray-700/50';
+    }
+    
+    const baseStyles = settings.gentleNotifications || settings.focusMode
+      ? 'bg-white/90 dark:bg-gray-800/90'
+      : 'bg-white dark:bg-gray-800';
+    
+    const borderStyles = computedStyles.adhdStyles.reducedBorder;
+    const shadowStyles = computedStyles.adhdStyles.reducedShadow;
+    const hoverEffect = settings.reduceAnimations ? '' : computedStyles.adhdStyles.gentleHover;
+    
+    return `${baseStyles} ${borderStyles} ${shadowStyles} ${hoverEffect}`;
+  };
+
+  const getPriorityDot = (priority: Task['priority']) => {
+    const styles = getComputedStyles();
+    const priorityMap = {
+      high: styles.themeColors.priorityHigh,
+      medium: styles.themeColors.priorityMedium,
+      low: styles.themeColors.priorityLow,
+    };
+    return priorityMap[priority];
+  };
+
+  const handleAddTask = () => {
+    if (newTaskText.trim()) {
+      addTask(newTaskText, newTaskPriority);
+      setNewTaskText('');
+      setNewTaskPriority('medium');
+      setIsAddingTask(false);
+    }
+  };
+
+  const handleCancelAddTask = () => {
+    setNewTaskText('');
+    setNewTaskPriority('medium');
+    setIsAddingTask(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAddTask();
+    } else if (e.key === 'Escape') {
+      handleCancelAddTask();
+    }
+  };
+
+  const handleDeleteTask = (taskId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent task toggle when clicking delete
+    deleteTask(taskId);
+  };
+
+  // Break reminder handlers
+  const handleTakeBreak = async () => {
+    breakReminderControls.takeBreak();
+    
+    // Provide encouraging voice feedback if enabled
+    if (settings.voiceFeedback && audioState.isSupported.speech) {
+      const breakMessages = {
+        supportive: [
+          "Excellent choice! Take your time to rest and recharge.",
+          "You deserve this break. I'll be here when you get back.",
+          "Perfect timing for a break. Your productivity will thank you!"
+        ],
+        gentle: [
+          "What a wonderful decision. Rest peacefully and return when you're ready.",
+          "Take all the time you need. Your wellbeing comes first.",
+          "Breathe deeply and let yourself truly rest."
+        ],
+        direct: [
+          "Break started. Timer reset for your next work session.",
+          "Good. Take your break and return refreshed.",
+          "Break time logged. See you in a few minutes."
+        ]
+      };
+
+      const messages = breakMessages[settings.coachPersonality];
+      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+      
+      try {
+        await audioControls.speak(randomMessage, settings.coachPersonality);
+      } catch (error) {
+        console.warn('Break voice feedback failed:', error);
+      }
+    }
+  };
+
+  const handleSnoozeBreak = (minutes: number) => {
+    breakReminderControls.snoozeBreak(minutes);
+  };
+
+  const handleDismissBreak = () => {
+    breakReminderControls.dismissBreak();
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuOpen && !(event.target as Element)?.closest('.menu-container')) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
+
+  // Cleanup audio system on unmount
+  useEffect(() => {
+    return () => {
+      if (audioState.isMicrophoneActive) {
+        audioControls.stopMicrophone();
+      }
+      if (audioState.isSpeaking) {
+        audioControls.stopSpeaking();
+      }
+    };
+  }, [audioState.isMicrophoneActive, audioState.isSpeaking, audioControls]);
+
+  // Handle audio errors gracefully
+  useEffect(() => {
+    if (audioState.error) {
+      // Auto-clear audio errors after 5 seconds to avoid persistent error states
+      const timer = setTimeout(() => {
+        audioControls.clearError();
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [audioState.error, audioControls]);
+
+  if (!settingsLoaded || tasksLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  const computedStyles = getComputedStyles();
+
+  return (
+    <div className={`min-h-screen relative overflow-hidden transition-all duration-700 ${
+      computedStyles.adhdStyles.focusBackground ||
+      'bg-gray-50 dark:bg-gray-950'
+    }`}>
+      {/* Subtle gradient overlay - enhanced for focus mode */}
+      <div className={`absolute inset-0 transition-opacity duration-700 ${
+        settings.focusMode
+          ? 'bg-gradient-to-br from-blue-50/20 via-purple-50/10 to-indigo-50/15 dark:from-blue-950/30 dark:via-purple-950/20 dark:to-indigo-950/25'
+          : 'bg-gradient-to-br from-gray-50 via-gray-50/95 to-gray-100/90 dark:from-gray-950 dark:via-gray-950/95 dark:to-gray-900/90'
+      }`} />
+      
+      {/* Sophisticated geometric pattern - hidden in focus mode or simplified interface */}
+      {!settings.focusMode && !settings.simplifiedInterface && (
+        <div className={`absolute inset-0 transition-opacity duration-700 ${
+          settings.gentleNotifications ? 'opacity-[0.008] dark:opacity-[0.01]' : 'opacity-[0.015] dark:opacity-[0.02]'
+        }`}>
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        </div>
+      )}
+
+      {/* Minimal Navigation */}
+      <nav className="absolute top-0 left-0 right-0 z-40">
+        <div className="flex justify-between items-center px-8 py-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 rounded-lg" />
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 tracking-tight">dashMate</span>
+          </div>
+          
+          <button 
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="menu-container relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+          >
+            <div className="w-5 h-4 flex flex-col justify-between">
+              <span className={`block h-0.5 bg-gray-900 dark:bg-gray-100 transform transition-all duration-300 origin-center ${menuOpen ? 'rotate-45 translate-y-1.5' : ''}`} />
+              <span className={`block h-0.5 bg-gray-900 dark:bg-gray-100 transition-all duration-300 ${menuOpen ? 'opacity-0 scale-x-0' : ''}`} />
+              <span className={`block h-0.5 bg-gray-900 dark:bg-gray-100 transform transition-all duration-300 origin-center ${menuOpen ? '-rotate-45 -translate-y-1.5' : ''}`} />
+            </div>
+          </button>
+        </div>
+      </nav>
+
+      {/* Menu Dropdown - simplified in ADHD modes */}
+      {menuOpen && (
+        <div className={`menu-container absolute top-20 right-8 z-50 w-48 rounded-xl bg-white dark:bg-gray-800 border transition-all duration-300 ${
+          computedStyles.adhdStyles.reducedShadow
+        } ${
+          computedStyles.adhdStyles.reducedBorder
+        }`}>
+          <div className="py-2">
+            <button
+              onClick={() => {
+                setShowSettings(true);
+                setMenuOpen(false);
+              }}
+              className={`flex w-full items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 transition-colors ${
+                computedStyles.adhdStyles.gentleHover
+              }`}
+            >
+              <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </button>
+            
+            <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+            
+            {/* Hide Help & Support in simplified interface */}
+            {!settings.simplifiedInterface && (
+              <button
+                onClick={() => setMenuOpen(false)}
+                className={`flex w-full items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 transition-colors ${
+                  computedStyles.adhdStyles.gentleHover
+                }`}
+              >
+                <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Help & Support
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className={`relative z-10 flex flex-col items-center justify-center min-h-screen transition-all duration-700 ${
+        settings.focusMode ? 'px-8 py-32' : 'px-6 py-24'
+      }`}>
+        {/* Header with fade-in animation - generous spacing in focus mode */}
+        <div className={`text-center transition-all duration-1000 ${
+          computedStyles.adhdStyles.focusMargin
+        } ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <h1 className={`${getComputedStyles().headingSize} font-light text-gray-900 dark:text-gray-50 mb-4 tracking-tight`}>
+            Focus.<span className="font-normal"> Flow.</span> <span className="font-thin">Flourish.</span>
+          </h1>
+          <p className={`${getComputedStyles().subtitleSize} text-gray-500 dark:text-gray-400 font-light tracking-wide`}>
+            Intelligent task management designed for how your mind works
+          </p>
+        </div>
+
+        {/* Sophisticated Microphone Interface - enhanced spacing in ADHD modes */}
+        <div className={`flex flex-col items-center justify-center transition-all duration-700 delay-100 ${
+          computedStyles.adhdStyles.focusMargin
+        } ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+          <div className="relative">
+            {/* Dynamic ripple effect - gentler in ADHD modes */}
+            {isListening && !settings.reduceAnimations && (
+              <>
+                <div className={`absolute inset-0 -m-8 ${
+                  settings.gentleNotifications ? 'animate-gentle-pulse' : 'animate-ping'
+                }`} style={{ 
+                  opacity: settings.gentleNotifications 
+                    ? Math.max(0.05, audioState.microphoneLevel * 0.3)
+                    : Math.max(0.1, audioState.microphoneLevel * 0.5)
+                }}>
+                  <div className={`w-full h-full rounded-full ${
+                    settings.gentleNotifications 
+                      ? 'bg-blue-200/20 dark:bg-blue-400/20'
+                      : 'bg-gray-400/30 dark:bg-gray-500/30'
+                  }`} />
+                </div>
+                <div className={`absolute inset-0 -m-4 ${
+                  settings.gentleNotifications ? 'animate-gentle-ping' : 'animate-ping'
+                } animation-delay-200`} style={{ 
+                  opacity: settings.gentleNotifications
+                    ? Math.max(0.03, audioState.microphoneLevel * 0.2)
+                    : Math.max(0.05, audioState.microphoneLevel * 0.3)
+                }}>
+                  <div className={`w-full h-full rounded-full ${
+                    settings.gentleNotifications
+                      ? 'bg-blue-200/15 dark:bg-blue-400/15'
+                      : 'bg-gray-400/20 dark:bg-gray-500/20'
+                  }`} />
+                </div>
+              </>
+            )}
+            
+            {/* Main button with ADHD-friendly styling */}
+            <button
+              onClick={handleMicClick}
+              className={`relative w-28 h-28 rounded-full flex items-center justify-center backdrop-blur-sm ${
+                computedStyles.animationClass
+              } ${
+                settings.reduceAnimations 
+                  ? ''
+                  : (settings.gentleNotifications || settings.focusMode)
+                    ? 'transform hover:scale-102 active:scale-98 duration-500'
+                    : 'transform hover:scale-105 active:scale-95 duration-500'
+              } ${
+                isListening 
+                  ? settings.gentleNotifications
+                    ? 'bg-blue-600 dark:bg-blue-400 shadow-lg'
+                    : 'bg-gray-900 dark:bg-white shadow-2xl'
+                  : settings.gentleNotifications || settings.focusMode
+                    ? `bg-white dark:bg-gray-900 shadow-sm hover:shadow-md border ${
+                        computedStyles.adhdStyles.reducedBorder
+                      }`
+                    : 'bg-white dark:bg-gray-900 shadow-xl hover:shadow-2xl border border-gray-200/50 dark:border-gray-700/50'
+              }`}
+            >
+              <div className={`absolute inset-0 rounded-full transition-opacity duration-300 ${
+                isListening ? 'opacity-100' : 'opacity-0'
+              }`}>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-gray-800 to-gray-600 dark:from-gray-100 dark:to-white" />
+              </div>
+              
+              <svg 
+                className={`relative w-10 h-10 transition-all duration-300 ${
+                  isListening ? 'text-white dark:text-gray-900' : 'text-gray-700 dark:text-gray-300'
+                }`}
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"
+                />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="text-center mt-6">
+            <p className={`${getComputedStyles().fontSize} text-gray-500 dark:text-gray-400 font-light tracking-wide transition-all duration-300 ${
+              isListening ? 'opacity-100' : 'opacity-70'
+            }`}>
+              {isListening ? "Listening to you..." : "Press to begin conversation"}
+            </p>
+            
+            {/* Break timer display - subtle and non-intrusive */}
+            {settings.breakReminders && !settings.focusMode && !settings.simplifiedInterface && breakReminderState.isActive && (
+              <div className="flex items-center justify-center mt-4 mb-2">
+                <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs ${
+                  settings.gentleNotifications 
+                    ? 'bg-blue-50/50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400' 
+                    : 'bg-gray-100/60 dark:bg-gray-800/60 text-gray-600 dark:text-gray-400'
+                }`}>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>
+                    {breakReminderState.timeUntilBreak <= 0 
+                      ? "Break time!" 
+                      : `Break in ${breakReminderControls.getFormattedTimeUntilBreak()}`
+                    }
+                  </span>
+                  {/* Progress indicator */}
+                  <div className="w-12 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-1000 ${
+                        settings.gentleNotifications 
+                          ? 'bg-blue-400 dark:bg-blue-500' 
+                          : 'bg-gray-400 dark:bg-gray-500'
+                      }`}
+                      style={{ 
+                        width: `${breakReminderControls.getWorkSessionProgress() * 100}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Audio status and controls - hidden in focus mode */}
+            {!settings.focusMode && (
+              <div className="flex items-center justify-center space-x-4 mt-4">
+                {/* Microphone sensitivity indicator */}
+                {!settings.simplifiedInterface && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-400 dark:text-gray-500">Sensitivity:</span>
+                    <div className="flex items-center space-x-1">
+                      <div className={`w-1 h-3 rounded-full ${
+                        computedStyles.animationClass
+                      } ${
+                        settings.microphoneSensitivity === 'high' 
+                          ? settings.gentleNotifications ? 'bg-green-400' : 'bg-green-500' 
+                          : 'bg-gray-300 dark:bg-gray-600'
+                      }`} />
+                      <div className={`w-1 h-4 rounded-full ${
+                        computedStyles.animationClass
+                      } ${
+                        ['medium', 'high'].includes(settings.microphoneSensitivity) 
+                          ? settings.gentleNotifications ? 'bg-yellow-400' : 'bg-yellow-500' 
+                          : 'bg-gray-300 dark:bg-gray-600'
+                      }`} />
+                      <div className={`w-1 h-5 rounded-full ${
+                        computedStyles.animationClass
+                      } ${
+                        settings.microphoneSensitivity === 'high' 
+                          ? settings.gentleNotifications ? 'bg-red-400' : 'bg-red-500' 
+                          : 'bg-gray-300 dark:bg-gray-600'
+                      }`} />
+                    </div>
+                  </div>
+                )}
+              
+                {/* Voice feedback status */}
+                {settings.voiceFeedback && audioState.isSupported.speech && (
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M18 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9c0 2.485-4.5 4.5-9 4.5s-9-2.015-9-4.5S7.515 7.5 12 7.5s9 2.015 9 4.5z" />
+                    </svg>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      Voice {audioState.isSpeaking ? 'Speaking' : 'Ready'}
+                    </span>
+                  </div>
+                )}
+              
+                {/* Audio error indicator - gentler styling */}
+                {audioState.error && (
+                  <div className="flex items-center space-x-2">
+                    <svg className={`w-4 h-4 ${
+                      settings.gentleNotifications ? 'text-red-400' : 'text-red-500'
+                    }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className={`text-xs ${
+                      settings.gentleNotifications ? 'text-red-400' : 'text-red-500'
+                    }`} title={audioState.error}>
+                      Audio Issue
+                    </span>
+                    <button 
+                      onClick={audioControls.clearError}
+                      className={`text-xs underline ${
+                        settings.gentleNotifications 
+                          ? 'text-red-400 hover:text-red-300' 
+                          : 'text-red-500 hover:text-red-400'
+                      } ${computedStyles.animationClass}`}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Refined Task List - enhanced for ADHD support */}
+        <div className={`w-full max-w-xl transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`flex items-center justify-between ${
+            computedStyles.adhdStyles.focusMargin
+          }`}>
+            <h2 className={`${computedStyles.fontSize} font-light text-gray-700 dark:text-gray-300 tracking-wide`}>
+              Current Focus
+            </h2>
+            <div className="flex items-center gap-3">
+              {!settings.focusMode && !settings.simplifiedInterface && (
+                <button className={`${computedStyles.fontSize} text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 ${computedStyles.animationClass}`}>
+                  View All
+                </button>
+              )}
+              <button
+                onClick={() => setIsAddingTask(true)}
+                className={`flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 ${computedStyles.animationClass} ${
+                  settings.reduceAnimations || settings.gentleNotifications ? '' : 'hover:scale-105'
+                }`}
+                title="Add new task"
+              >
+                <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div className={computedStyles.taskSpacing}>
+            {/* Add Task Form - enhanced for ADHD */}
+            {isAddingTask && (
+              <div className={`bg-white dark:bg-gray-800 border-2 rounded-2xl ${computedStyles.taskPadding} ${computedStyles.animationClass} ${
+                settings.gentleNotifications || settings.focusMode
+                  ? 'border-blue-200 dark:border-blue-800 shadow-sm'
+                  : 'border-gray-300 dark:border-gray-600 shadow-md'
+              }`}>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-start space-x-4">
+                    {/* Task input */}
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={newTaskText}
+                        onChange={(e) => setNewTaskText(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="What needs to be done?"
+                        className={`w-full bg-transparent ${getComputedStyles().fontSize} text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border-none outline-none resize-none`}
+                        autoFocus
+                      />
+                    </div>
+                    
+                    {/* Priority selector */}
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={newTaskPriority}
+                        onChange={(e) => setNewTaskPriority(e.target.value as Task['priority'])}
+                        className="text-xs px-2 py-1 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      >
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex items-center justify-end space-x-3">
+                    <button
+                      onClick={handleCancelAddTask}
+                      className={`px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 ${computedStyles.animationClass}`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddTask}
+                      disabled={!newTaskText.trim()}
+                      className={`px-4 py-1.5 text-sm rounded-lg ${computedStyles.animationClass} ${
+                        settings.gentleNotifications || settings.focusMode
+                          ? 'bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
+                          : 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200'
+                      } ${
+                        newTaskText.trim() 
+                          ? '' 
+                          : 'opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      Add Task
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tasks.map((task, index) => (
+              <div
+                key={task.id}
+                className={`group relative overflow-hidden rounded-2xl border backdrop-blur-sm cursor-pointer ${computedStyles.animationClass} ${getPriorityStyles(task.priority, task.completed)} ${
+                  mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+                }`}
+                style={{ 
+                  transitionDelay: settings.reduceAnimations ? '0ms' : `${300 + index * 50}ms`
+                }}
+                onClick={() => toggleTask(task.id)}
+              >
+                <div className={`relative ${computedStyles.taskPadding}`}>
+                  <div className="flex items-start space-x-4">
+                    {/* Custom checkbox with ADHD-friendly styling */}
+                    <div className="mt-0.5 relative">
+                      <div className={`w-5 h-5 rounded-md border-2 ${computedStyles.animationClass} ${
+                        task.completed 
+                          ? settings.gentleNotifications
+                            ? 'bg-blue-500 dark:bg-blue-400 border-blue-500 dark:border-blue-400'
+                            : 'bg-gray-900 dark:bg-white border-gray-900 dark:border-white'
+                          : settings.gentleNotifications || settings.focusMode
+                            ? 'border-gray-200 dark:border-gray-700 group-hover:border-blue-300 dark:group-hover:border-blue-600'
+                            : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
+                      }`}>
+                        {task.completed && (
+                          <svg className={`w-3 h-3 absolute top-0.5 left-0.5 ${
+                            settings.gentleNotifications
+                              ? 'text-white dark:text-blue-900'
+                              : 'text-white dark:text-gray-900'
+                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Task content with priority indicator */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <span className={`${computedStyles.fontSize} leading-relaxed ${computedStyles.animationClass} ${
+                          task.completed 
+                            ? settings.gentleNotifications || settings.focusMode
+                              ? 'text-gray-400 dark:text-gray-500 line-through opacity-70'
+                              : 'text-gray-400 dark:text-gray-500 line-through'
+                            : 'text-gray-800 dark:text-gray-100'
+                        }`}>
+                          {task.text}
+                        </span>
+                        
+                        <div className="flex items-start space-x-3 ml-4">
+                          {/* Minimal priority dot - hidden in simplified interface mode */}
+                          {!settings.simplifiedInterface && (
+                            <div className="mt-1.5">
+                              <div className={`w-2 h-2 rounded-full ${getPriorityDot(task.priority)} ${
+                                task.completed ? 'opacity-30' : 'opacity-100'
+                              }`} />
+                            </div>
+                          )}
+                          
+                          {/* Delete button - gentler styling in ADHD modes */}
+                          <button
+                            onClick={(e) => handleDeleteTask(task.id, e)}
+                            className={`opacity-0 group-hover:opacity-100 mt-0.5 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 ${computedStyles.animationClass} ${
+                              settings.gentleNotifications || settings.focusMode
+                                ? 'hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-400 dark:hover:text-red-300'
+                                : 'hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400'
+                            } ${
+                              settings.reduceAnimations || settings.gentleNotifications ? '' : 'hover:scale-110'
+                            }`}
+                            title="Delete task"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Subtle hover effect line - hidden in focus mode */}
+                {!settings.focusMode && (
+                  <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${computedStyles.animationClass} ${
+                    task.completed ? 'bg-transparent' : getPriorityDot(task.priority)
+                  } ${
+                    !task.completed && !settings.reduceAnimations ? 'group-hover:w-1' : ''
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Refined motivational section - hidden in focus mode */}
+          {!settings.focusMode && (
+            <div className={`transition-all duration-700 delay-500 ${
+              computedStyles.adhdStyles.focusMargin
+            } ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+              <div className={`relative overflow-hidden rounded-2xl backdrop-blur-sm border ${
+                settings.gentleNotifications
+                  ? 'bg-gradient-to-br from-blue-50/30 to-purple-50/20 dark:from-blue-950/20 dark:to-purple-950/15 border-blue-100/30 dark:border-blue-800/30'
+                  : 'bg-gradient-to-br from-gray-100/50 to-gray-50/50 dark:from-gray-800/30 dark:to-gray-900/30 border-gray-200/30 dark:border-gray-700/30'
+              }`}>
+                <div className={computedStyles.adhdStyles.focusPadding}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Daily Progress</p>
+                    <p className="text-2xl font-light text-gray-900 dark:text-gray-100">
+                      1 <span className="text-sm text-gray-400 dark:text-gray-500">of</span> 3 <span className="text-sm text-gray-400 dark:text-gray-500">completed</span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Focus Score</p>
+                    <div className="flex items-end space-x-1">
+                      <div className="w-1 h-6 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                      <div className="w-1 h-8 bg-gray-400 dark:bg-gray-500 rounded-full" />
+                      <div className="w-1 h-10 bg-gray-600 dark:bg-gray-400 rounded-full" />
+                      <div className="w-1 h-7 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Progress bar */}
+                <div className="mt-4">
+                  <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full w-1/3 bg-gradient-to-r from-gray-400 to-gray-600 dark:from-gray-500 dark:to-gray-300 rounded-full transition-all duration-1000" />
+                  </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Add custom animation styles */}
+      <style jsx>{`
+        @keyframes ping {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+        .animate-ping {
+          animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        .animation-delay-200 {
+          animation-delay: 200ms;
+        }
+      `}</style>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <Settings
+          settings={settings}
+          onSettingsChange={updateSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+
+      {/* Developer panels - hidden in focus mode and simplified interface */}
+      {settings.devMode && !settings.focusMode && !settings.simplifiedInterface && (
+        <SettingsTestPanel />
+      )}
+      
+      {/* Voice Controls Panel - Only when dev mode is enabled and audio is supported */}
+      {settings.devMode && !settings.focusMode && !settings.simplifiedInterface && (audioState.isSupported.audio || audioState.isSupported.speech) && (
+        <VoiceControls
+          audioState={audioState}
+          audioControls={audioControls}
+          settings={settings}
+          className="fixed bottom-4 left-4 w-80 z-40"
+        />
+      )}
+
+      {/* Break Reminder Notification */}
+      {settings.breakReminders && breakReminderState.isBreakNotificationShown && (
+        <BreakNotification
+          isVisible={breakReminderState.isBreakNotificationShown}
+          breakDuration={settings.breakDuration}
+          onTakeBreak={handleTakeBreak}
+          onSnooze={handleSnoozeBreak}
+          onDismiss={handleDismissBreak}
+          settings={settings}
+        />
+      )}
+    </div>
+  );
+}

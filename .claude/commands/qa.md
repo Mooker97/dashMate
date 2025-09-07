@@ -32,7 +32,7 @@ User Input → task-delegator (scope analysis) →
 ├── ux-playwright-reviewer (UI testing)
 ├── code-archivist (code quality review)  
 └── backend-engineer (performance checks)
-→ documentation-writer (report synthesis) → github-repo-manager (PR creation)
+→ documentation-writer (report synthesis)
 ```
 
 ### Agent Definitions
@@ -66,12 +66,6 @@ User Input → task-delegator (scope analysis) →
 - Comprehensive QA report creation
 - Executive summary generation
 - Actionable improvement roadmap
-
-**github-repo-manager**: Integration management
-- Feature branch creation
-- QA findings commit and PR creation
-- Repository workflow integration
-- Result artifact management
 
 ## Execution Flow
 
@@ -206,8 +200,8 @@ Synthesized Recommendations:
 Now passing aggregated results to documentation-writer for comprehensive report generation.
 ```
 
-### Phase 4: Documentation & Integration
-Sequential execution for report generation and PR creation:
+### Phase 4: Documentation Generation
+Final report generation:
 
 #### Report Generation (documentation-writer)
 ```prompt
@@ -234,31 +228,6 @@ QA Report Generated:
 - Total Recommendations: {total_recommendations}
 - Estimated Implementation Effort: {effort_estimate}
 
-Passing to github-repo-manager for PR creation.
-```
-
-#### PR Creation (github-repo-manager)
-```prompt  
-I'm creating a pull request with the comprehensive QA analysis findings and recommendations.
-
-QA Analysis Results:
-- Findings Count: {findings_count}
-- Priority Distribution: {priority_distribution}
-- Estimated Impact: {impact_assessment}
-
-Creating feature branch and PR with:
-- QA report documentation
-- Screenshot artifacts (if applicable)
-- Implementation checklist
-- Priority-based improvement roadmap
-
-*Creates feature branch, commits artifacts, and generates PR*
-
-Pull Request Created:
-- Branch: qa-analysis-{timestamp}
-- PR Title: "QA Analysis: {scope} - {findings_count} findings identified"
-- PR URL: {pr_url}
-
 QA pipeline execution completed successfully.
 ```
 
@@ -267,25 +236,25 @@ QA pipeline execution completed successfully.
 ### Full Analysis (`full`)
 - **Duration**: 4-6 minutes
 - **Coverage**: All QA streams with comprehensive analysis
-- **Agents**: All 6 agents activated
-- **Output**: Complete QA report + PR with all findings
+- **Agents**: All 5 agents activated
+- **Output**: Complete QA report with all findings
 
 ### UI Focus (`ui`)  
 - **Duration**: 2-3 minutes
 - **Coverage**: UI testing, accessibility, ADHD-specific UX
-- **Agents**: task-delegator, ux-playwright-reviewer, documentation-writer, github-repo-manager
+- **Agents**: task-delegator, ux-playwright-reviewer, documentation-writer
 - **Output**: UI-focused report with screenshots and accessibility audit
 
 ### Code Quality (`code`)
 - **Duration**: 2-3 minutes  
 - **Coverage**: Code quality, architecture, documentation
-- **Agents**: task-delegator, code-archivist, documentation-writer, github-repo-manager
+- **Agents**: task-delegator, code-archivist, documentation-writer
 - **Output**: Code quality report with architectural recommendations
 
 ### Performance (`performance`)
 - **Duration**: 2-3 minutes
 - **Coverage**: Performance analysis, optimization opportunities  
-- **Agents**: task-delegator, backend-engineer, documentation-writer, github-repo-manager
+- **Agents**: task-delegator, backend-engineer, documentation-writer
 - **Output**: Performance report with optimization roadmap
 
 ### Quick Check (`quick`)
@@ -418,46 +387,5 @@ Initiating QA pipeline with {final_scope} scope...
 {adhd_recommendations}
 ```
 
-### PR Template
-```markdown
-# QA Analysis: {scope} - {findings_count} findings identified
-
-## Summary
-Comprehensive QA analysis completed for dashMate ADHD task management application.
-
-**Analysis Scope**: {scope}
-**Findings**: {findings_breakdown}
-**Priority Distribution**: {priority_stats}
-
-## Key Findings
-
-### 🚨 Critical Issues
-{critical_issues}
-
-### ⚡ Quick Wins  
-{quick_wins}
-
-### 🎯 High Impact Improvements
-{high_impact_items}
-
-## Files Changed
-- `qa-report-{timestamp}.md` - Comprehensive QA analysis report
-- `qa-screenshots/` - UI testing artifacts (if applicable)
-- `performance-metrics.json` - Performance analysis data (if applicable)
-
-## Next Steps
-1. Review critical issues for immediate attention
-2. Prioritize quick wins for next sprint
-3. Plan high impact improvements for upcoming releases
-4. Monitor accessibility improvements for ADHD users
-
-## Testing
-- [x] UI accessibility validation
-- [x] Code quality metrics
-- [x] Performance baseline established
-- [x] Cross-stream correlation analysis
-
-🤖 Generated with Claude Code QA Pipeline
-```
 
 This comprehensive QA pipeline provides thorough analysis capabilities while maintaining efficiency through parallel execution and intelligent coordination. The command adapts to different scope requirements while ensuring consistent quality and actionable insights for the dashMate ADHD task management application.

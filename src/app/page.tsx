@@ -18,7 +18,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { toast, Toaster } from 'sonner';
 import { motion } from 'framer-motion';
-import { Heart, Target } from 'lucide-react';
+import { Heart, Target, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);

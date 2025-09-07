@@ -95,7 +95,7 @@ export function useTasks() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user, authLoading, supabase]);
+  }, [isAuthenticated, user, authLoading]);
 
   // Create default tasks in Supabase for authenticated users
   const createDefaultTasksInSupabase = async () => {

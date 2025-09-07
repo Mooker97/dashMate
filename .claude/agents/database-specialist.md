@@ -1,7 +1,7 @@
 ---
 name: database-specialist
 description: Use this agent when you need database-related expertise including schema design, query optimization, data modeling, migration planning, performance tuning, or database architecture decisions. Examples: <example>Context: User is implementing a new feature that requires storing user task data efficiently. user: 'I need to store tasks with priorities, completion status, and timestamps. What's the best database schema for this?' assistant: 'I'll use the database-specialist agent to design an optimal schema for your task management data.' <commentary>Since this involves database schema design and data modeling, use the database-specialist agent to provide expert guidance on table structure, indexing, and relationships.</commentary></example> <example>Context: User is experiencing slow query performance in their task management app. user: 'My task queries are taking too long when I have thousands of tasks. How can I optimize this?' assistant: 'Let me use the database-specialist agent to analyze and optimize your query performance.' <commentary>This is a database performance optimization issue that requires specialized knowledge of indexing, query planning, and database tuning.</commentary></example>
-model: opus
+model: inherit
 color: pink
 ---
 

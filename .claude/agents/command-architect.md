@@ -1,7 +1,7 @@
 ---
 name: command-architect
 description: Use this agent when you need to analyze user requirements and design optimal command architecture for Claude Code commands. This agent specializes in requirement gathering, architecture pattern selection, and coordination strategy design. Examples: <example>Context: User wants to create a new command but isn't sure about the structure. user: 'I need a command that can handle multiple aspects of code optimization simultaneously' assistant: 'I'll use the command-architect agent to analyze your requirements and design the optimal architecture pattern' <commentary>The user needs architectural guidance for a complex command, which requires the command-architect's expertise in requirement analysis and design.</commentary></example> <example>Context: User has a complex workflow that needs to be turned into a command. user: 'I want to create a command that manages deployment pipelines with testing, building, and deployment phases' assistant: 'Let me use the command-architect agent to design a proper architecture for your deployment pipeline command' <commentary>This requires analyzing complex workflow requirements and designing appropriate command architecture, perfect for the command-architect.</commentary></example>
-model: opus
+model: inherit
 color: purple
 ---
 

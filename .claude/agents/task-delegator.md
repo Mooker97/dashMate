@@ -1,7 +1,7 @@
 ---
 name: task-delegator
 description: Use this agent when new tasks, features, or requirements are introduced to the project and need to be broken down and assigned to appropriate team members or other agents. This agent excels at analyzing work items, decomposing them into actionable subtasks, and determining the best allocation of responsibilities based on expertise and current workload.\n\nExamples:\n- <example>\n  Context: A new feature request has been submitted for the dashMate app.\n  user: "We need to add a voice transcription feature that converts spoken tasks into text"\n  assistant: "I'll use the task-delegator agent to break this down and assign the work appropriately."\n  <commentary>\n  Since this is a new feature request that needs to be broken down and assigned, the task-delegator agent should analyze the requirements and create a delegation plan.\n  </commentary>\n  </example>\n- <example>\n  Context: Multiple bug reports have come in that need to be triaged and assigned.\n  user: "We have three bug reports: login timeout issues, task priority colors not updating, and mobile layout problems"\n  assistant: "Let me invoke the task-delegator agent to prioritize and assign these bugs to the right team members."\n  <commentary>\n  Multiple issues need to be triaged and delegated, which is exactly what the task-delegator agent is designed to handle.\n  </commentary>\n  </example>
-model: opus
+model: inherit
 color: red
 ---
 

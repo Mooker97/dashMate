@@ -199,7 +199,30 @@ export default function Home() {
   }
 
   return (
-    <ThemeProvider customizations={profile?.customizations || { customColors: {}, customFonts: {}, customSpacing: {} }}>
+    <ThemeProvider customizations={profile?.customizations || { 
+        customColors: {
+          primary: '#3b82f6',
+          secondary: '#8b5cf6',
+          accent: '#06b6d4',
+          priorityHigh: '#ef4444',
+          priorityMedium: '#f59e0b',
+          priorityLow: '#10b981'
+        },
+        dashboardLayout: 'default',
+        defaultView: 'today',
+        taskGrouping: 'priority',
+        coachPersonality: 'supportive',
+        customPrompts: {},
+        learningPreferences: {
+          trackProductivityPatterns: true,
+          trackEnergyLevels: true,
+          trackMoodCorrelations: true,
+          trackTimeEstimations: true
+        },
+        customVoiceCommands: {},
+        quickActionButtons: ['Add Task', 'Take Break', 'Review Day'],
+        customCategories: ['Work', 'Personal', 'Health', 'Learning']
+      }}>
       <Toaster 
         position="top-center"
         toastOptions={{

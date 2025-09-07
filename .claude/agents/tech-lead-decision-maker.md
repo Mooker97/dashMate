@@ -1,7 +1,7 @@
 ---
 name: tech-lead-decision-maker
 description: Use this agent when you need to make strategic technical decisions, plan implementation approaches, or delegate development tasks to team members. Examples: <example>Context: The user needs to implement a new authentication system for their app. user: 'We need to add user authentication to our Next.js app. What's the best approach and how should we break this down for the team?' assistant: 'I'll use the tech-lead-decision-maker agent to analyze the requirements and create an implementation plan with task delegation.' <commentary>Since the user needs strategic technical guidance and task breakdown, use the tech-lead-decision-maker agent to provide architectural decisions and delegation strategy.</commentary></example> <example>Context: The user is facing a performance issue and needs to decide on the solution approach. user: 'Our app is loading slowly on mobile. The team is asking what we should prioritize first.' assistant: 'Let me use the tech-lead-decision-maker agent to analyze the performance issues and create a prioritized action plan for the team.' <commentary>Since this requires technical leadership to analyze problems and delegate solutions, use the tech-lead-decision-maker agent.</commentary></example>
-model: opus
+model: inherit
 color: blue
 ---
 

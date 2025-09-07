@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/services/supabase';
+import { createClient } from '@/utils/supabase/client';
+import { useAuth } from './useAuth';
 
 export interface Task {
   id: string;
@@ -52,30 +53,20 @@ export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-  // Check authentication status
-  const checkAuth = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
-      return !!user;
-    } catch {
-      console.log('Auth check failed, using localStorage mode');
-      setIsAuthenticated(false);
-      return false;
-    }
-  };
+  
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
+  const supabase = createClient();
 
   // Fetch tasks based on authentication state
   const fetchTasks = useCallback(async () => {
+    // Wait for auth to be determined
+    if (authLoading) return;
+    
     try {
       setLoading(true);
       setError(null);
       
-      const userIsAuthenticated = await checkAuth();
-      
-      if (userIsAuthenticated) {
+      if (isAuthenticated && user) {
         // User is authenticated - use Supabase
         const { data, error: supabaseError } = await supabase
           .from('tasks')
@@ -101,11 +92,10 @@ export function useTasks() {
       setError(err instanceof Error ? err.message : 'Failed to fetch tasks');
       // Fallback to localStorage
       loadFromLocalStorage();
-      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, user, authLoading, supabase]);
 
   // Create default tasks in Supabase for authenticated users
   const createDefaultTasksInSupabase = async () => {
@@ -182,7 +172,8 @@ export function useTasks() {
         text: text.trim(),
         completed: false,
         priority,
-        createdAt: new Date(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
       const updatedTasks = [newTask, ...tasks];
@@ -212,7 +203,7 @@ export function useTasks() {
           prev.map(t => t.id === id ? { 
             ...t, 
             completed: !t.completed,
-            completedAt: !t.completed ? new Date() : undefined
+            completed_at: !t.completed ? new Date().toISOString() : undefined
           } : t)
         );
       } catch (err) {
@@ -225,7 +216,7 @@ export function useTasks() {
         t.id === id ? { 
           ...t, 
           completed: !t.completed, 
-          completedAt: !t.completed ? new Date() : undefined 
+          completed_at: !t.completed ? new Date().toISOString() : undefined 
         } : t
       );
       setTasks(updatedTasks);

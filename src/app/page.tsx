@@ -9,7 +9,9 @@ import { FocusSession } from '@/components/FocusSession';
 import { HabitTracker } from '@/components/HabitTracker';
 import { EnergyTracker } from '@/components/EnergyTracker';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import { ProductivityCoach } from '@/services/productivityCoach';
+import './theme.css';
 import { useTasks } from '@/hooks/useTasks';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { toast, Toaster } from 'sonner';
@@ -126,7 +128,7 @@ export default function Home() {
     toast.error(error, { duration: 3000 });
   };
 
-  const handleStartFocusSession = (task?: any) => {
+  const handleStartFocusSession = (task?: { id: string; text: string; priority: string }) => {
     if (task) {
       setSelectedTaskForFocus({
         id: task.id,
@@ -138,7 +140,7 @@ export default function Home() {
     trackBehavior('focus_session_started', { taskId: task?.id });
   };
 
-  const handleSessionComplete = (sessionData: any) => {
+  const handleSessionComplete = (sessionData: { tasksCompleted: number; focusScore: number }) => {
     trackBehavior('focus_session_completed', sessionData);
     toast.success(`🎉 Great focus session! You completed ${sessionData.tasksCompleted} tasks with a focus score of ${sessionData.focusScore}!`, { duration: 5000 });
   };
@@ -148,7 +150,7 @@ export default function Home() {
     toast.success(`Energy level recorded: ${energy}/5 ${mood ? `(${mood})` : ''}`, { duration: 3000 });
   };
 
-  const handleHabitUpdate = (habitData: any) => {
+  const handleHabitUpdate = (habitData: Record<string, unknown>) => {
     trackBehavior('habit_update', habitData);
     toast.success('Habit progress updated! Keep building those positive patterns! 🌟', { duration: 3000 });
   };
@@ -197,7 +199,7 @@ export default function Home() {
   }
 
   return (
-    <>
+    <ThemeProvider customizations={profile?.customizations || { customColors: {}, customFonts: {}, customSpacing: {} }}>
       <Toaster 
         position="top-center"
         toastOptions={{
@@ -217,7 +219,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 via-transparent to-purple-100/20 pointer-events-none" />
         
         <div className="relative z-10">
-          <nav className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+          <nav className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-100" role="navigation" aria-label="Main navigation">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
                 <Brain className="w-6 h-6 text-white" />
@@ -239,6 +241,7 @@ export default function Home() {
                 onClick={() => setShowNotifications(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
                 title="Smart Notifications"
+                aria-label="Open smart notifications panel"
               >
                 <Bell className="w-5 h-5 text-gray-600" />
                 {/* Notification indicator */}
@@ -249,6 +252,7 @@ export default function Home() {
                 onClick={() => setShowEnergyTracker(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Energy Check-in"
+                aria-label="Open energy tracking check-in"
               >
                 <Zap className="w-5 h-5 text-gray-600" />
               </button>
@@ -257,6 +261,7 @@ export default function Home() {
                 onClick={() => setShowHabitTracker(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Habit Tracker"
+                aria-label="Open habit tracking panel"
               >
                 <Flame className="w-5 h-5 text-gray-600" />
               </button>
@@ -265,6 +270,7 @@ export default function Home() {
                 onClick={() => handleStartFocusSession()}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Start Focus Session"
+                aria-label="Start a new focus session"
               >
                 <Clock className="w-5 h-5 text-gray-600" />
               </button>
@@ -273,6 +279,7 @@ export default function Home() {
                 onClick={() => setShowInsights(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="View Analytics"
+                aria-label="View productivity analytics and insights"
               >
                 <BarChart3 className="w-5 h-5 text-gray-600" />
               </button>
@@ -281,6 +288,7 @@ export default function Home() {
                 onClick={() => setShowSettings(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Settings"
+                aria-label="Open application settings"
               >
                 <SettingsIcon className="w-5 h-5 text-gray-600" />
               </button>
@@ -288,17 +296,20 @@ export default function Home() {
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
               >
                 {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </nav>
 
-          <main className="container mx-auto px-4 py-8 max-w-4xl">
+          <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl" role="main" aria-label="Task management dashboard">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-12"
+              role="banner"
             >
               <h2 className="text-4xl font-light text-gray-800 mb-3">
                 Welcome back! Ready to
@@ -314,6 +325,8 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
               className="flex flex-col items-center mb-12"
+              role="region"
+              aria-label="Voice interaction controls"
             >
               <MicrophoneButton
                 onTranscription={handleTranscription}
@@ -368,6 +381,8 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="mb-8"
+              role="region"
+              aria-label="Task management section"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-2">
@@ -508,6 +523,6 @@ export default function Home() {
           }}
         />
       </div>
-    </>
+    </ThemeProvider>
   );
 }

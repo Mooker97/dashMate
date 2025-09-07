@@ -8,11 +8,11 @@ export function cn(...inputs: ClassValue[]) {
 export function getPriorityColor(priority: 'high' | 'medium' | 'low') {
   switch (priority) {
     case 'high':
-      return 'text-red-500 border-red-200 bg-red-50/50';
+      return 'priority-high priority-high-text border-red-200 bg-red-50/50';
     case 'medium':
-      return 'text-yellow-600 border-yellow-200 bg-yellow-50/50';
+      return 'priority-medium priority-medium-text border-yellow-200 bg-yellow-50/50';
     case 'low':
-      return 'text-green-600 border-green-200 bg-green-50/50';
+      return 'priority-low priority-low-text border-green-200 bg-green-50/50';
   }
 }
 

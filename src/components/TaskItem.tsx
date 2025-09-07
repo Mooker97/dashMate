@@ -25,6 +25,8 @@ export function TaskItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(task.text);
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSaveEdit = () => {
     if (editText.trim() && editText !== task.text) {
@@ -54,11 +56,36 @@ export function TaskItem({
       exit={{ opacity: 0, x: -100 }}
       className={cn(
         "group relative bg-white rounded-xl border-2 transition-all duration-300",
-        "hover:shadow-lg hover:border-opacity-100",
+        "hover:shadow-lg hover:border-opacity-100 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-opacity-50",
         task.completed 
           ? "opacity-70 border-gray-200" 
           : getPriorityColor(task.priority)
       )}
+      role="listitem"
+      aria-label={`Task: ${task.text} (${getPriorityLabel(task.priority)} priority, ${task.completed ? 'completed' : 'active'})`}
+      tabIndex={0}
+      aria-describedby={`task-shortcuts-${task.id}`}
+      onKeyDown={(e) => {
+        // Handle keyboard navigation and shortcuts at the item level
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const nextItem = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement;
+          nextItem?.focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prevItem = (e.currentTarget as HTMLElement).previousElementSibling as HTMLElement;
+          prevItem?.focus();
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          onToggle(task.id);
+        } else if (e.key === 'Delete') {
+          e.preventDefault();
+          onDelete(task.id);
+        } else if (e.key === 'e' || e.key === 'E') {
+          e.preventDefault();
+          if (!task.completed) setIsEditing(true);
+        }
+      }}
     >
       <div className="p-4">
         <div className="flex items-start gap-4">
@@ -120,8 +147,8 @@ export function TaskItem({
               <p
                 onClick={() => !task.completed && setIsEditing(true)}
                 className={cn(
-                  "text-gray-800 transition-all cursor-text",
-                  task.completed && "line-through text-gray-500"
+                  "text-gray-900 transition-all cursor-text font-medium",
+                  task.completed && "line-through text-gray-600"
                 )}
               >
                 {task.text}
@@ -129,6 +156,10 @@ export function TaskItem({
             )}
 
             <div className="flex items-center gap-4 mt-2">
+              {/* Quick action shortcuts hint */}
+              <div className="sr-only" id={`task-shortcuts-${task.id}`}>
+                Press Space to toggle completion, Delete to remove, E to edit, arrow keys to navigate
+              </div>
               <div className="relative">
                 <button
                   onClick={() => setShowPriorityMenu(!showPriorityMenu)}
@@ -153,6 +184,8 @@ export function TaskItem({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+                      role="menu"
+                      aria-label="Priority options"
                     >
                       {(['high', 'medium', 'low'] as const).map((priority) => (
                         <button
@@ -165,6 +198,8 @@ export function TaskItem({
                             "flex items-center gap-2 w-full px-3 py-2 text-left text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg",
                             task.priority === priority && "bg-gray-50 font-medium"
                           )}
+                          role="menuitem"
+                          aria-selected={task.priority === priority}
                         >
                           {priorityIcons[priority]}
                           <span>{getPriorityLabel(priority)}</span>

@@ -168,10 +168,24 @@ export function MicrophoneButton({
   };
 
   return (
-    <div className="relative">
+    <div className="relative group" role="region" aria-label="Voice recording controls">
       <AnimatePresence>
         {isRecording && (
           <>
+            {/* Outer pulse ring */}
+            <motion.div
+              className="absolute inset-0 rounded-full bg-gradient-to-r from-red-400 to-pink-400 opacity-30"
+              initial={{ scale: 1 }}
+              animate={{ 
+                scale: [1, 1.3 + audioLevel * 0.8, 1],
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 2,
+                ease: "easeInOut"
+              }}
+            />
+            {/* Middle pulse ring */}
             <motion.div
               className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500 to-pink-500 opacity-20"
               initial={{ scale: 1 }}
@@ -184,8 +198,9 @@ export function MicrophoneButton({
                 ease: "easeInOut"
               }}
             />
+            {/* Inner pulse ring */}
             <motion.div
-              className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500 to-pink-500 opacity-10"
+              className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500 to-pink-500 opacity-15"
               initial={{ scale: 1 }}
               animate={{ 
                 scale: [1, 1.4 + audioLevel * 0.7, 1],
@@ -210,13 +225,18 @@ export function MicrophoneButton({
           "shadow-xl hover:shadow-2xl transform hover:scale-105",
           "focus:outline-none focus:ring-4 focus:ring-offset-2",
           isRecording 
-            ? "bg-gradient-to-r from-red-500 to-pink-500 text-white focus:ring-red-300" 
-            : "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 focus:ring-blue-300",
-          isProcessing && "opacity-75 cursor-wait",
+            ? "bg-gradient-to-r from-red-500 to-pink-500 text-white focus:ring-red-300 animate-pulse" 
+            : isProcessing
+            ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white focus:ring-purple-300"
+            : "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 focus:ring-blue-300 hover:shadow-blue-500/25",
+          isProcessing && "cursor-wait",
           className
         )}
         whileTap={{ scale: 0.95 }}
-        aria-label={isRecording ? "Stop recording" : "Start recording"}
+        aria-label={isProcessing ? "Processing audio..." : isRecording ? "Stop recording" : "Start voice recording"}
+        aria-describedby="mic-instructions"
+        role="button"
+        tabIndex={0}
       >
         <AnimatePresence mode="wait">
           {isProcessing ? (
@@ -257,25 +277,57 @@ export function MicrophoneButton({
         </AnimatePresence>
       </motion.button>
 
-      {isRecording && (
-        <motion.div 
-          className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-sm font-medium text-gray-600"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-        >
-          Listening...
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {isRecording && (
+          <motion.div 
+            className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-red-100 text-red-700 rounded-lg shadow-md border border-red-200"
+            initial={{ opacity: 0, y: -10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.9 }}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              Listening... ({Math.round(audioLevel * 100)}%)
+            </div>
+          </motion.div>
+        )}
 
-      {isProcessing && (
-        <motion.div 
-          className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-sm font-medium text-gray-600"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+        {isProcessing && (
+          <motion.div 
+            className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg shadow-md border border-purple-200"
+            initial={{ opacity: 0, y: -10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.9 }}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <motion.div 
+                className="w-2 h-2 bg-purple-500 rounded-full"
+                animate={{ scale: [1, 1.5, 1] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+              />
+              Processing audio...
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hidden instructions for screen readers */}
+      <div id="mic-instructions" className="sr-only">
+        Press to start voice recording. Speak clearly and the AI will help you manage your tasks. Press again to stop recording. The button changes color to indicate recording state: blue for ready, red for recording, purple for processing.
+      </div>
+      
+      {/* Visual indicator for ready state */}
+      {!isRecording && !isProcessing && (
+        <motion.div
+          className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-blue-50 text-blue-600 text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+          initial={{ y: -5 }}
+          animate={{ y: 0 }}
         >
-          Processing...
+          Click to speak
         </motion.div>
       )}
     </div>

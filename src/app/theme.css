@@ -1,0 +1,265 @@
+/* Theme CSS Variables */
+:root {
+  /* Enhanced colors for better accessibility (WCAG AA compliant) */
+  --color-primary: #4B5563;        /* Higher contrast gray */
+  --color-secondary: #6B7280;      /* Medium gray */
+  --color-accent: #1F2937;         /* Darker accent for better readability */
+  --color-priority-high: #B91C1C;  /* Darker red for better contrast */
+  --color-priority-medium: #D97706; /* Orange remains good */
+  --color-priority-low: #047857;   /* Darker green for better contrast */
+  
+  /* Enhanced text colors */
+  --color-text-primary: #111827;   /* Near black for maximum readability */
+  --color-text-secondary: #374151; /* Darker gray text */
+  --color-text-muted: #6B7280;     /* Muted but still readable */
+  
+  /* Background colors with better contrast */
+  --color-bg-light: #F9FAFB;       /* Very light background */
+  --color-bg-white: #FFFFFF;       /* Pure white */
+  --color-bg-gray: #F3F4F6;        /* Light gray background */
+  
+  /* Interactive element colors */
+  --color-focus: #2563EB;          /* Strong blue for focus indicators */
+  --color-hover: #E5E7EB;          /* Light gray for hover states */
+  
+  /* Spacing */
+  --spacing-comfortable: 1;
+  --spacing-compact: 1;
+  
+  /* Fonts */
+  --font-family: inherit;
+  --font-size-base: 16px;
+}
+
+/* Apply theme colors to gradients */
+.theme-gradient-primary {
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+}
+
+.theme-gradient-accent {
+  background: linear-gradient(to right, var(--color-secondary), var(--color-accent));
+}
+
+/* Priority color classes */
+.priority-high {
+  border-left-color: var(--color-priority-high) !important;
+}
+
+.priority-high-bg {
+  background-color: var(--color-priority-high) !important;
+}
+
+.priority-high-text {
+  color: var(--color-priority-high) !important;
+}
+
+.priority-medium {
+  border-left-color: var(--color-priority-medium) !important;
+}
+
+.priority-medium-bg {
+  background-color: var(--color-priority-medium) !important;
+}
+
+.priority-medium-text {
+  color: var(--color-priority-medium) !important;
+}
+
+.priority-low {
+  border-left-color: var(--color-priority-low) !important;
+}
+
+.priority-low-bg {
+  background-color: var(--color-priority-low) !important;
+}
+
+.priority-low-text {
+  color: var(--color-priority-low) !important;
+}
+
+/* Primary color applications */
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.border-primary {
+  border-color: var(--color-primary) !important;
+}
+
+/* Secondary color applications */
+.bg-secondary {
+  background-color: var(--color-secondary) !important;
+}
+
+.text-secondary {
+  color: var(--color-secondary) !important;
+}
+
+.border-secondary {
+  border-color: var(--color-secondary) !important;
+}
+
+/* Accent color applications */
+.bg-accent {
+  background-color: var(--color-accent) !important;
+}
+
+.text-accent {
+  color: var(--color-accent) !important;
+}
+
+.border-accent {
+  border-color: var(--color-accent) !important;
+}
+
+/* Spacing adjustments */
+.comfortable-spacing {
+  padding: calc(1rem * var(--spacing-comfortable));
+  margin: calc(0.5rem * var(--spacing-comfortable));
+}
+
+.compact-spacing {
+  padding: calc(1rem * var(--spacing-compact));
+  margin: calc(0.5rem * var(--spacing-compact));
+}
+
+/* Font adjustments */
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Accessibility utilities */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Focus management for ADHD users - more visible focus indicators */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--color-focus) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+    --color-bg-white: #FFFFFF;
+    --color-priority-high: #CC0000;
+    --color-priority-medium: #CC6600;
+    --color-priority-low: #006600;
+  }
+  
+  button,
+  [role="button"] {
+    border: 2px solid currentColor !important;
+  }
+}
+
+/* Enhanced hover states for better interaction feedback */
+button:hover,
+[role="button"]:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+/* Skip to main content link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+  border-radius: 0 0 4px 4px;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Mobile-first responsive improvements */
+@media (max-width: 768px) {
+  /* Ensure touch targets are at least 44px */
+  button,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  /* Improve spacing on mobile */
+  .mobile-spacing {
+    padding: 1rem !important;
+    margin: 0.5rem 0 !important;
+  }
+  
+  /* Better font sizes for mobile */
+  body {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  /* Improve button spacing */
+  button + button,
+  [role="button"] + [role="button"] {
+    margin-left: 0.5rem;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tablet-spacing {
+    padding: 1.25rem !important;
+  }
+}
+
+/* Ensure minimum touch target sizes */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Better mobile navigation */
+@media (max-width: 640px) {
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 1rem;
+    z-index: 50;
+  }
+}

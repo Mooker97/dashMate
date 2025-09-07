@@ -70,18 +70,62 @@ export function TaskList({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full"
-        />
+      <div className="space-y-6">
+        {/* Loading state with skeleton */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
+          <div className="animate-pulse">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="space-y-2">
+                <div className="h-8 bg-gray-300 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-8 bg-gray-300 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-8 bg-gray-300 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Loading skeleton for tasks */}
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl border-2 border-gray-200 p-4 animate-pulse">
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                <div className="flex-1 space-y-3">
+                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                  <div className="flex items-center gap-4">
+                    <div className="h-6 bg-gray-200 rounded w-16"></div>
+                    <div className="h-3 bg-gray-200 rounded w-24"></div>
+                  </div>
+                </div>
+                <div className="w-5 h-5 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex items-center justify-center py-4">
+          <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"
+            />
+            <span className="text-blue-700 text-sm font-medium">Loading your tasks...</span>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="Task management interface">
       {stats.total > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -115,18 +159,21 @@ export function TaskList({
       )}
 
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter tasks">
           {filterButtons.map((btn) => (
             <button
               key={btn.value}
               onClick={() => setFilter(btn.value)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all",
+                "flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all min-h-[44px] whitespace-nowrap",
                 "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
                 filter === btn.value
                   ? "bg-blue-500 text-white shadow-md"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                  : "bg-white text-gray-800 hover:bg-gray-50 border border-gray-300"
               )}
+              role="radio"
+              aria-checked={filter === btn.value}
+              aria-label={`Filter tasks: ${btn.label}`}
             >
               {btn.icon}
               <span className="hidden sm:inline">{btn.label}</span>
@@ -143,11 +190,13 @@ export function TaskList({
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowAddTask(!showAddTask)}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all",
+            "flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all min-h-[44px]",
             "bg-gradient-to-r from-green-500 to-emerald-500 text-white",
             "hover:from-green-600 hover:to-emerald-600 shadow-md hover:shadow-lg",
             "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           )}
+          aria-label={showAddTask ? "Cancel adding task" : "Add new task"}
+          aria-expanded={showAddTask}
         >
           <Plus className="w-5 h-5" />
           <span className="hidden sm:inline">Add Task</span>
@@ -162,8 +211,10 @@ export function TaskList({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-white rounded-xl border-2 border-blue-200 p-4 space-y-3">
+            <div className="bg-white rounded-xl border-2 border-blue-200 p-4 space-y-3" role="form" aria-label="Add new task">
+              <label htmlFor="new-task-input" className="sr-only">Task description</label>
               <input
+                id="new-task-input"
                 type="text"
                 value={newTaskText}
                 onChange={(e) => setNewTaskText(e.target.value)}
@@ -174,10 +225,12 @@ export function TaskList({
                 placeholder="What needs to be done?"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoFocus
+                aria-describedby="task-priority-group"
               />
               
               <div className="flex items-center justify-between">
-                <div className="flex gap-2">
+                <div className="flex gap-2" role="group" aria-labelledby="task-priority-label" id="task-priority-group">
+                  <span id="task-priority-label" className="sr-only">Select task priority</span>
                   {(['high', 'medium', 'low'] as const).map((priority) => (
                     <button
                       key={priority}
@@ -192,6 +245,9 @@ export function TaskList({
                             : "bg-green-100 text-green-700 border-2 border-green-300"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-2 border-transparent"
                       )}
+                      role="radio"
+                      aria-checked={newTaskPriority === priority}
+                      aria-label={`Priority: ${priority === 'high' ? 'Urgent' : priority === 'medium' ? 'Important' : 'Whenever'}`}
                     >
                       {priority === 'high' ? 'Urgent' : priority === 'medium' ? 'Important' : 'Whenever'}
                     </button>
@@ -205,7 +261,7 @@ export function TaskList({
                       setNewTaskText('');
                       setNewTaskPriority('medium');
                     }}
-                    className="px-4 py-1 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="px-4 py-1 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
                   >
                     Cancel
                   </button>
@@ -228,7 +284,11 @@ export function TaskList({
         )}
       </AnimatePresence>
 
-      <div className="space-y-3">
+      <div className="space-y-3" role="list" aria-label={`${filteredTasks.length} ${filter} tasks`}>
+        {/* Keyboard navigation instructions */}
+        <div className="sr-only" id="task-list-instructions">
+          Task list navigation: Use arrow keys to move between tasks, Space to toggle completion, E to edit, Delete to remove task
+        </div>
         <AnimatePresence mode="popLayout">
           {filteredTasks.length === 0 ? (
             <motion.div

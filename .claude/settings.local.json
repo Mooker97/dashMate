@@ -44,7 +44,9 @@
       "mcp__supabase__apply_migration",
       "mcp__supabase__execute_sql",
       "mcp__supabase__get_advisors",
-      "mcp__playwright__browser_type"
+      "mcp__playwright__browser_type",
+      "Bash(move:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []

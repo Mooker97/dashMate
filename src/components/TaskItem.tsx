@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Task } from '@/hooks/useTasks';
 import { cn, getPriorityColor, getPriorityLabel } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Input } from '@/components/ui/form/input'
 
 interface TaskItemProps {
   task: Task;
@@ -117,15 +118,16 @@ export function TaskItem({
           <div className="flex-1 min-w-0">
             {isEditing ? (
               <div className="flex gap-2">
-                <input
-                  type="text"
+                <Input
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleSaveEdit();
                     if (e.key === 'Escape') handleCancelEdit();
                   }}
-                  className="flex-1 px-2 py-1 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="border-blue-300"
+                  containerClassName="flex-1"
+                  size="sm"
                   autoFocus
                 />
                 <button

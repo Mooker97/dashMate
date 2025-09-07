@@ -6,6 +6,7 @@ import { Plus, Filter, TrendingUp, CheckCircle2, Clock, AlertTriangle } from 'lu
 import { Task } from '@/hooks/useTasks';
 import { TaskItem } from './TaskItem';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/form/input'
 
 interface TaskListProps {
   tasks: Task[];
@@ -212,10 +213,8 @@ export function TaskList({
             className="overflow-hidden"
           >
             <div className="bg-white rounded-xl border-2 border-blue-200 p-4 space-y-3" role="form" aria-label="Add new task">
-              <label htmlFor="new-task-input" className="sr-only">Task description</label>
-              <input
+              <Input
                 id="new-task-input"
-                type="text"
                 value={newTaskText}
                 onChange={(e) => setNewTaskText(e.target.value)}
                 onKeyDown={(e) => {
@@ -223,9 +222,10 @@ export function TaskList({
                   if (e.key === 'Escape') setShowAddTask(false);
                 }}
                 placeholder="What needs to be done?"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded-lg"
                 autoFocus
                 aria-describedby="task-priority-group"
+                containerClassName="space-y-0"
               />
               
               <div className="flex items-center justify-between">

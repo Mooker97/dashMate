@@ -10,15 +10,15 @@ import { HabitTracker } from '@/components/HabitTracker';
 import { EnergyTracker } from '@/components/EnergyTracker';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import { AuthButton } from '@/components/AuthButton';
 import { useAuthContext } from '@/components/AuthProvider';
+import { Navbar } from '@/components/ui/layout/Navbar';
 import { ProductivityCoach } from '@/services/productivityCoach';
 import './theme.css';
 import { useTasks } from '@/hooks/useTasks';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { toast, Toaster } from 'sonner';
 import { motion } from 'framer-motion';
-import { Brain, Sparkles, Heart, Target, Settings as SettingsIcon, BarChart3, Menu, X, Clock, Flame, Zap, Bell } from 'lucide-react';
+import { Heart, Target } from 'lucide-react';
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -246,93 +246,17 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 via-transparent to-purple-100/20 pointer-events-none" />
         
         <div className="relative z-10">
-          <nav className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-100" role="navigation" aria-label="Main navigation">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-800">dashMate</h1>
-                {profile?.name && (
-                  <p className="text-xs text-gray-500">Welcome back, {profile.name}!</p>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <span className="hidden sm:inline text-xs text-gray-500">ADHD-Friendly AI Coach</span>
-              <Sparkles className="w-4 h-4 text-purple-500" />
-              
-              {/* Action Buttons */}
-              <button
-                onClick={() => setShowNotifications(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative focusable touch-target"
-                title="Smart Notifications"
-                aria-label="Open smart notifications panel"
-              >
-                <Bell className="w-5 h-5 text-gray-600" />
-                {/* Notification indicator */}
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full animate-pulse" />
-              </button>
-              
-              <button
-                onClick={() => setShowEnergyTracker(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
-                title="Energy Check-in"
-                aria-label="Open energy tracking check-in"
-              >
-                <Zap className="w-5 h-5 text-gray-600" />
-              </button>
-              
-              <button
-                onClick={() => setShowHabitTracker(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
-                title="Habit Tracker"
-                aria-label="Open habit tracking panel"
-              >
-                <Flame className="w-5 h-5 text-gray-600" />
-              </button>
-              
-              <button
-                onClick={() => handleStartFocusSession()}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
-                title="Start Focus Session"
-                aria-label="Start a new focus session"
-              >
-                <Clock className="w-5 h-5 text-gray-600" />
-              </button>
-              
-              <button
-                onClick={() => setShowInsights(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
-                title="View Analytics"
-                aria-label="View productivity analytics and insights"
-              >
-                <BarChart3 className="w-5 h-5 text-gray-600" />
-              </button>
-              
-              <button
-                onClick={() => setShowSettings(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
-                title="Settings"
-                aria-label="Open application settings"
-              >
-                <SettingsIcon className="w-5 h-5 text-gray-600" />
-              </button>
-              
-              {/* Authentication Button */}
-              <AuthButton />
-              
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden focusable touch-target"
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={menuOpen}
-              >
-                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-          </nav>
+          <Navbar
+            profile={profile}
+            menuOpen={menuOpen}
+            onMenuToggle={() => setMenuOpen(!menuOpen)}
+            onShowNotifications={() => setShowNotifications(true)}
+            onShowEnergyTracker={() => setShowEnergyTracker(true)}
+            onShowHabitTracker={() => setShowHabitTracker(true)}
+            onStartFocusSession={handleStartFocusSession}
+            onShowInsights={() => setShowInsights(true)}
+            onShowSettings={() => setShowSettings(true)}
+          />
 
           <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl" role="main" aria-label="Task management dashboard">
             <motion.div

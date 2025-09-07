@@ -6,6 +6,7 @@ import {
   Plus, Flame, Calendar, TrendingUp, Star, CheckCircle2,
   Circle, MoreHorizontal, Edit3, Trash2, Target
 } from 'lucide-react';
+import { Input } from '@/components/ui/form/input'
 
 interface Habit {
   id: string;
@@ -257,19 +258,19 @@ export function HabitTracker({ isVisible, onClose, onHabitUpdate }: HabitTracker
                 >
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="space-y-3">
-                      <input
-                        type="text"
+                      <Input
                         value={newHabitName}
                         onChange={(e) => setNewHabitName(e.target.value)}
                         placeholder="Habit name (e.g., 'Drink 8 glasses of water')"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="focus:ring-green-500 focus:border-green-500"
+                        size="sm"
                       />
-                      <input
-                        type="text"
+                      <Input
                         value={newHabitDescription}
                         onChange={(e) => setNewHabitDescription(e.target.value)}
                         placeholder="Description (optional)"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="focus:ring-green-500 focus:border-green-500"
+                        size="sm"
                       />
                       <div className="flex gap-3">
                         <select

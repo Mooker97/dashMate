@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  TrendingUp, Clock, Zap, Brain, Target, Calendar,
+  TrendingUp, Clock, Zap, Brain, Target,
   BarChart3, PieChart, Activity, Lightbulb, Star,
   ChevronRight, ChevronDown, Award
 } from 'lucide-react';
-import { UserProfile, LearningInsight, ProductivityPattern } from '@/types/user';
+import { UserProfile } from '@/types/user';
 import { Task } from '@/hooks/useTasks';
 
 interface InsightsPanelProps {
@@ -247,7 +247,7 @@ export function InsightsPanel({ profile, tasks, isVisible, onClose }: InsightsPa
       {profile.learningInsights.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>I'm still learning about your patterns!</p>
+          <p>I&apos;m still learning about your patterns!</p>
           <p className="text-sm mt-2">Complete more tasks to unlock personalized insights.</p>
         </div>
       ) : (

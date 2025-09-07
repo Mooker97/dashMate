@@ -44,7 +44,7 @@ export function ThemeProvider({ customizations, children }: ThemeProviderProps) 
   }, [customizations]);
 
   // Apply theme colors to specific elements
-  const applyThemeToElements = (colors: any) => {
+  const applyThemeToElements = (colors: UserCustomizations['customColors']) => {
     // Update gradient backgrounds
     const gradients = document.querySelectorAll('[class*="bg-gradient"]');
     gradients.forEach(el => {
@@ -66,7 +66,7 @@ export function ThemeProvider({ customizations, children }: ThemeProviderProps) 
     updatePriorityColors(colors);
   };
   
-  const updatePriorityColors = (colors: any) => {
+  const updatePriorityColors = (colors: UserCustomizations['customColors']) => {
     // High priority
     const highPriorityElements = document.querySelectorAll('[data-priority="high"]');
     highPriorityElements.forEach(el => {

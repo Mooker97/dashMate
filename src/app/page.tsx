@@ -10,6 +10,8 @@ import { HabitTracker } from '@/components/HabitTracker';
 import { EnergyTracker } from '@/components/EnergyTracker';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { AuthButton } from '@/components/AuthButton';
+import { useAuthContext } from '@/components/AuthProvider';
 import { ProductivityCoach } from '@/services/productivityCoach';
 import './theme.css';
 import { useTasks } from '@/hooks/useTasks';
@@ -30,6 +32,8 @@ export default function Home() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedTaskForFocus, setSelectedTaskForFocus] = useState<{ id: string; text: string; priority: string } | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  const { isAuthenticated } = useAuthContext();
   
   const {
     tasks,
@@ -316,6 +320,9 @@ export default function Home() {
                 <SettingsIcon className="w-5 h-5 text-gray-600" />
               </button>
               
+              {/* Authentication Button */}
+              <AuthButton />
+              
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden focusable touch-target"
@@ -460,6 +467,18 @@ export default function Home() {
               <p className="text-xs text-gray-400">
                 Remember: Progress over perfection. You&apos;re doing amazing! 💜
               </p>
+              
+              {/* Sync reminder for unauthenticated users */}
+              {!isAuthenticated && tasks.length > 0 && (
+                <div className="mt-3">
+                  <a
+                    href="/auth/login"
+                    className="text-xs text-blue-500 hover:text-blue-600 underline"
+                  >
+                    ☁️ Sign in to sync your tasks across devices
+                  </a>
+                </div>
+              )}
               
               {/* Show personalized recommendations if available */}
               {profile && (

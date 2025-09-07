@@ -27,12 +27,12 @@ export function useAuth() {
   const supabase = createClient()
 
   // Load user profile from database
-  const loadUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
+  const loadUserProfile = useCallback(async (authId: string): Promise<UserProfile | null> => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('auth_id', authId)
         .single()
 
       if (error) {
@@ -116,7 +116,7 @@ export function useAuth() {
   // Sign up with email/password
   const signUp = async (email: string, password: string, metadata?: { 
     name?: string 
-    [key: string]: any 
+    [key: string]: string | number | boolean 
   }) => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }))
     
@@ -204,7 +204,7 @@ export function useAuth() {
         ...updates,
         updated_at: new Date().toISOString()
       })
-      .eq('id', authState.user.id)
+      .eq('auth_id', authState.user.id)
       .select()
       .single()
 

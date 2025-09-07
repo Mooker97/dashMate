@@ -9,19 +9,24 @@ export interface Task {
   text: string
   completed: boolean
   priority: 'high' | 'medium' | 'low'
-  category?: string
+  category?: string | null
   created_at: string
   updated_at: string
-  completed_at?: string
-  user_id?: string
-  tags?: string[]
-  subtasks?: any[]
-  context?: Record<string, any>
-  estimated_duration?: string
-  actual_duration?: string
-  due_date?: string
-  energy_level_required?: number
-  difficulty_rating?: number
-  notes?: string
-  reward?: string
+  completed_at?: string | null
+  user_id: string
+  tags: string[]
+  subtasks: any // JSON field
+  context: any // JSON field
+  estimated_duration?: string | null
+  actual_duration?: string | null
+  due_date?: string | null
+  energy_level_required?: number | null
+  difficulty_rating?: number | null
+  notes?: string | null
+  reward?: string | null
+  order_index: number
+  parent_task_id?: string | null
+  recurring_pattern?: any | null // JSON field
+  focus_time_required?: string | null
+  attachment_urls: string[]
 }

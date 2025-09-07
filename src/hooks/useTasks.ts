@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuthContext } from '@/components/AuthProvider';
 
 export interface Task {
   id: string;
@@ -54,7 +54,7 @@ export function useTasks() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const { isAuthenticated, user, loading: authLoading } = useAuth();
+  const { isAuthenticated, user, profile, loading: authLoading } = useAuthContext();
   const supabase = createClient();
 
   // Fetch tasks based on authentication state
@@ -66,11 +66,12 @@ export function useTasks() {
       setLoading(true);
       setError(null);
       
-      if (isAuthenticated && user) {
+      if (isAuthenticated && user && profile) {
         // User is authenticated - use Supabase
         const { data, error: supabaseError } = await supabase
           .from('tasks')
           .select('*')
+          .eq('user_id', profile.id)
           .order('created_at', { ascending: false });
 
         if (supabaseError) {
@@ -99,13 +100,21 @@ export function useTasks() {
 
   // Create default tasks in Supabase for authenticated users
   const createDefaultTasksInSupabase = async () => {
+    if (!profile) return;
+    
     try {
       const { data, error: supabaseError } = await supabase
         .from('tasks')
         .insert(defaultTasks.map(task => ({
           text: task.text,
           completed: task.completed,
-          priority: task.priority
+          priority: task.priority,
+          user_id: profile.id,
+          tags: [],
+          subtasks: [],
+          context: {},
+          attachment_urls: [],
+          order_index: 0
         })))
         .select();
 
@@ -146,12 +155,21 @@ export function useTasks() {
   const addTask = async (text: string, priority: Task['priority'] = 'medium') => {
     setError(null);
     
-    if (isAuthenticated) {
+    if (isAuthenticated && profile) {
       // Authenticated user - use Supabase
       try {
         const { data, error: supabaseError } = await supabase
           .from('tasks')
-          .insert([{ text: text.trim(), priority }])
+          .insert([{ 
+            text: text.trim(), 
+            priority,
+            user_id: profile.id,
+            tags: [],
+            subtasks: [],
+            context: {},
+            attachment_urls: [],
+            order_index: tasks.length
+          }])
           .select()
           .single();
 

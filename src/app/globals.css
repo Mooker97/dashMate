@@ -205,6 +205,26 @@ body {
   min-width: 44px;
 }
 
+/* Ensure all form elements have proper text colors */
+input, textarea, select {
+  color: rgb(17 24 39) !important; /* gray-900 */
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgb(107 114 128) !important; /* gray-500 */
+}
+
+@media (prefers-color-scheme: dark) {
+  input, textarea, select {
+    color: rgb(17 24 39) !important; /* Keep dark text even in dark mode for better contrast on white backgrounds */
+    background-color: white !important;
+  }
+  
+  input::placeholder, textarea::placeholder {
+    color: rgb(107 114 128) !important;
+  }
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .priority-urgent { 

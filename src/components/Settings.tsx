@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  X, Settings as SettingsIcon, Palette, Brain, Volume2, Bell, 
-  Shield, Zap, Clock, Target, TrendingUp, User, Sliders,
-  Moon, Sun, Monitor, Paintbrush, Eye, MousePointer
+  X, Settings as SettingsIcon, Brain, Bell, 
+  Shield, User, Sliders, Eye, MousePointer, Target
 } from 'lucide-react';
 import { UserPreferences, UserCustomizations } from '@/types/user';
 import { ColorCustomizer } from './ColorCustomizer';
@@ -75,7 +74,10 @@ export function Settings({
     disabled?: boolean;
   }) => (
     <button
-      onClick={() => !disabled && onChange(!checked)}
+      onClick={(e) => {
+        e.stopPropagation();
+        !disabled && onChange(!checked);
+      }}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
         checked 
           ? 'bg-blue-600' 
@@ -99,19 +101,71 @@ export function Settings({
     value: string; 
     options: { value: string; label: string }[];
     onChange: (value: string) => void;
-  }) => (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      {options.map(option => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const selectedOption = options.find(opt => opt.value === value) || options[0];
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+        }
+      };
+
+      if (isOpen) {
+        document.addEventListener('mousedown', handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, [isOpen]);
+
+    return (
+      <div ref={dropdownRef} className="relative">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-left flex items-center justify-between"
+        >
+          <span>{selectedOption?.label}</span>
+          <svg 
+            className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {isOpen && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+            {options.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-3 py-2 text-sm text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none first:rounded-t-lg last:rounded-b-lg ${
+                  option.value === value ? 'bg-blue-50 text-blue-900' : 'text-gray-900'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const ColorPicker = ({ 
     value, 
@@ -126,7 +180,11 @@ export function Settings({
       <input
         type="color"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          e.stopPropagation();
+          onChange(e.target.value);
+        }}
+        onClick={(e) => e.stopPropagation()}
         className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
       />
       <span className="text-xs text-gray-600">{label}</span>
@@ -260,7 +318,11 @@ export function Settings({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-blue-700 mb-1">ADHD Type</label>
-                    <select className="w-full px-2 py-1 text-xs border border-blue-200 rounded bg-white">
+                    <select 
+                      className="w-full px-2 py-1 text-xs border border-blue-200 rounded bg-white text-gray-900"
+                      onChange={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <option>Combined Type</option>
                       <option>Inattentive</option>
                       <option>Hyperactive</option>
@@ -269,7 +331,11 @@ export function Settings({
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-blue-700 mb-1">Focus Style</label>
-                    <select className="w-full px-2 py-1 text-xs border border-blue-200 rounded bg-white">
+                    <select 
+                      className="w-full px-2 py-1 text-xs border border-blue-200 rounded bg-white text-gray-900"
+                      onChange={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <option>Flexible</option>
                       <option>Short Bursts</option>
                       <option>Deep Dives</option>
@@ -448,12 +514,16 @@ export function Settings({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -478,7 +548,10 @@ export function Settings({
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveTab(tab.id);
+                    }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                       activeTab === tab.id
                         ? 'bg-blue-500 text-white'

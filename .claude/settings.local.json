@@ -37,7 +37,8 @@
       "Bash(mkdir:*)",
       "Bash(dir:*)",
       "Bash(cat:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

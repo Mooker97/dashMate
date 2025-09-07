@@ -262,7 +262,7 @@ export default function Home() {
               {/* Action Buttons */}
               <button
                 onClick={() => setShowNotifications(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative focusable touch-target"
                 title="Smart Notifications"
                 aria-label="Open smart notifications panel"
               >
@@ -273,7 +273,7 @@ export default function Home() {
               
               <button
                 onClick={() => setShowEnergyTracker(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
                 title="Energy Check-in"
                 aria-label="Open energy tracking check-in"
               >
@@ -282,7 +282,7 @@ export default function Home() {
               
               <button
                 onClick={() => setShowHabitTracker(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
                 title="Habit Tracker"
                 aria-label="Open habit tracking panel"
               >
@@ -291,7 +291,7 @@ export default function Home() {
               
               <button
                 onClick={() => handleStartFocusSession()}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
                 title="Start Focus Session"
                 aria-label="Start a new focus session"
               >
@@ -300,7 +300,7 @@ export default function Home() {
               
               <button
                 onClick={() => setShowInsights(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
                 title="View Analytics"
                 aria-label="View productivity analytics and insights"
               >
@@ -309,7 +309,7 @@ export default function Home() {
               
               <button
                 onClick={() => setShowSettings(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focusable touch-target"
                 title="Settings"
                 aria-label="Open application settings"
               >
@@ -318,7 +318,7 @@ export default function Home() {
               
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden focusable touch-target"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
               >
@@ -331,7 +331,7 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center mb-12"
+              className="text-center mb-12 welcome-text"
               role="banner"
             >
               <h2 className="text-4xl font-light text-gray-800 mb-3">

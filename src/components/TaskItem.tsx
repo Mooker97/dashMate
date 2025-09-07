@@ -211,15 +211,15 @@ export function TaskItem({
               </div>
 
               <span className="text-xs text-gray-500">
-                {(task.createdAt || task.created_at)
-                  ? format(new Date(task.createdAt || task.created_at || ''), 'MMM d, h:mm a')
+                {task.created_at
+                  ? format(new Date(task.created_at), 'MMM d, h:mm a')
                   : 'Just now'
                 }
               </span>
 
-              {task.completed && (task.completedAt || task.updated_at) && (
+              {task.completed && task.updated_at && (
                 <span className="text-xs text-green-600 font-medium">
-                  Completed {format(new Date(task.completedAt || task.updated_at || ''), 'MMM d')}
+                  Completed {format(new Date(task.updated_at), 'MMM d')}
                 </span>
               )}
             </div>

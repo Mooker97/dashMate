@@ -218,6 +218,12 @@ export function MicrophoneButton({
 
       <motion.button
         onClick={toggleRecording}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleRecording();
+          }
+        }}
         disabled={isProcessing}
         className={cn(
           sizeClasses[size],

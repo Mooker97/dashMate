@@ -50,3 +50,4 @@ interface Task {
 ```
 
 The app is designed to eventually integrate with OpenAI API for conversational AI coaching, with the current microphone interface serving as the foundation for voice interaction.
+- please put all reviews like this into the projectDocs folder

@@ -1,7 +1,7 @@
 ---
 name: ux-designer-minimalist
 description: Use this agent when you need expert UX design guidance for creating or improving user interfaces with a focus on minimalism, aesthetic beauty, and exceptional user-friendliness. This includes design reviews, UI component creation, layout optimization, user flow improvements, and accessibility enhancements. Examples:\n\n<example>\nContext: The user wants to improve the visual design of their task management app.\nuser: "I need help making my task list interface more beautiful and user-friendly"\nassistant: "I'll use the UX designer agent to analyze and improve your interface design."\n<commentary>\nSince the user needs UX design improvements focused on aesthetics and usability, use the Task tool to launch the ux-designer-minimalist agent.\n</commentary>\n</example>\n\n<example>\nContext: The user is building a new feature and wants design guidance.\nuser: "I'm adding a settings panel to my app. Can you help with the design?"\nassistant: "Let me engage the UX designer agent to create a minimalist, user-friendly settings panel design."\n<commentary>\nThe user needs UX design expertise for a new feature, so use the ux-designer-minimalist agent for design recommendations.\n</commentary>\n</example>
-model: opus
+model: inherit
 color: pink
 ---
 

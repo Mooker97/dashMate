@@ -16,9 +16,12 @@
       "Bash(powershell:*)",
       "Bash(npx tsc:*)",
       "Bash(taskkill:*)",
-      "Read(C:\\c\\coding\\dashMate\\dashmate/**)",
-      "Read(C:\\c\\coding\\dashMate\\dashmate\\src\\components/**)",
-      "Read(C:\\c\\coding\\dashMate\\dashmate/**)",
+      "Read(**)",
+      "Read(src/**)",
+      "Read(components/**)",
+      "Read(public/**)",
+      "Read(docs/**)",
+      "Read(projectDocs/**)",
       "Bash(tasklist:*)",
       "Bash(npm ls:*)",
       "Bash(wmic:*)",
@@ -31,7 +34,10 @@
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_press_key",
       "mcp__playwright__browser_close",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

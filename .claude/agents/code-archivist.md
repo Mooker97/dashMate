@@ -1,7 +1,7 @@
 ---
 name: code-archivist
 description: Use this agent when code changes have been made and need to be documented, when maintaining project documentation, or when updating changelogs. Examples: <example>Context: User has just implemented a new feature for task priority filtering in the dashMate app. user: 'I just added a priority filter component that allows users to filter tasks by high, medium, or low priority. Can you document this change?' assistant: 'I'll use the code-archivist agent to document this new feature and update the changelog.' <commentary>Since code changes were made that need documentation, use the code-archivist agent to record the changes and update relevant documentation.</commentary></example> <example>Context: User has refactored the task management system to use a new data structure. user: 'I've refactored the task system to include due dates and categories. The Task interface now has dueDate and category fields.' assistant: 'Let me use the code-archivist agent to document these structural changes and update our documentation.' <commentary>Significant code changes require documentation updates, so use the code-archivist agent to maintain accurate records.</commentary></example>
-model: opus
+model: inherit
 color: cyan
 ---
 

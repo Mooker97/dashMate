@@ -1,7 +1,7 @@
 ---
 name: ux-playwright-reviewer
 description: Use this agent when you need expert UI/UX review of frontend components or pages that are currently running in a browser. This agent will use Playwright to interact with and screenshot the interface, then provide comprehensive feedback on visual design, usability, and accessibility improvements. Perfect for reviewing newly implemented features, redesigned interfaces, or conducting accessibility audits. Examples:\n\n<example>\nContext: The user has just implemented a new landing page and wants UX feedback.\nuser: "I've finished implementing the new landing page design"\nassistant: "Great! Let me use the UX reviewer agent to evaluate the landing page's design, usability, and accessibility."\n<commentary>\nSince new frontend work has been completed, use the Task tool to launch the ux-playwright-reviewer agent to provide comprehensive UX feedback.\n</commentary>\n</example>\n\n<example>\nContext: The user wants to ensure their form meets accessibility standards.\nuser: "Can you check if our signup form is accessible?"\nassistant: "I'll use the UX reviewer agent to analyze the signup form's accessibility along with its overall UX."\n<commentary>\nThe user is asking for accessibility review, which is a core function of the ux-playwright-reviewer agent.\n</commentary>\n</example>\n\n<example>\nContext: After implementing responsive design changes.\nuser: "I've updated the mobile responsive layout for the dashboard"\nassistant: "Let me launch the UX reviewer agent to evaluate the responsive design across different viewport sizes."\n<commentary>\nResponsive design changes need UX review, so use the ux-playwright-reviewer agent.\n</commentary>\n</example>
-model: opus
+model: inherit
 color: purple
 ---
 

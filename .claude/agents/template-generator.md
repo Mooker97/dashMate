@@ -1,7 +1,7 @@
 ---
 name: template-generator
 description: Use this agent when you need to generate command templates, boilerplate code, and structured implementations for Claude Code commands. This agent specializes in creating well-structured command files, interactive flows, and reusable code patterns. Examples: <example>Context: User has a command architecture and needs the actual implementation generated. user: 'I have a parallel command design for code review and need the template generated' assistant: 'I'll use the template-generator agent to create the complete command template with proper structure' <commentary>The user needs code generation based on an architecture, which requires the template-generator's expertise in creating structured implementations.</commentary></example> <example>Context: User needs interactive prompts and flows for their command. user: 'My command needs to ask users questions and branch based on their answers' assistant: 'Let me use the template-generator agent to create interactive flows and user prompts' <commentary>This requires generating structured interaction patterns and user interface flows, perfect for the template-generator.</commentary></example>
-model: sonnet
+model: inherit
 color: green
 ---
 

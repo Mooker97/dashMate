@@ -1,7 +1,7 @@
 ---
 name: documentation-writer
 description: Use this agent when you need to create comprehensive documentation for Claude Code commands, including usage examples, agent interaction patterns, and user guides. This agent specializes in clear technical communication and creating helpful documentation that follows Claude Code standards. Examples: <example>Context: User has created a command and needs documentation written. user: 'I have a parallel command for code analysis and need comprehensive documentation' assistant: 'I'll use the documentation-writer agent to create complete documentation with examples and usage patterns' <commentary>The user needs documentation creation, which requires the documentation-writer's expertise in technical communication and Claude Code documentation standards.</commentary></example> <example>Context: User needs help documenting complex agent interactions. user: 'My command has multiple agents working together and users need to understand how they interact' assistant: 'Let me use the documentation-writer agent to document the agent interactions and coordination patterns' <commentary>This requires documenting complex technical interactions in a user-friendly way, perfect for the documentation-writer.</commentary></example>
-model: sonnet
+model: inherit
 color: blue
 ---
 
